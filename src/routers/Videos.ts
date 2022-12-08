@@ -6,7 +6,7 @@ const startDate = 1546300800000
 
 videosRouter.get('/', (req, res) => {
     if( dataBase.videos.length ){
-        res.status(201).send(dataBase.videos)
+        res.status(200).send(dataBase.videos)
     }
 })
 
@@ -34,7 +34,7 @@ videosRouter.post('/',(req, res)=>{
         })
         return;
     }
-    if(typeof req.body.author === "string" && req.body.author.length < 40){
+    if(typeof req.body.author === "string" && req.body.author.length < 20){
         video.author = req.body.author
     } else {
         res.status(400).send({
@@ -90,7 +90,7 @@ videosRouter.put('/:id', (req, res) => {
                     ]
                 })
                 return;
-            } if ( typeof req.body.author === "string" && req.body.author.length < 40) {
+            } if ( typeof req.body.author === "string" && req.body.author.length < 20) {
                 video.author = req.body.author;
             } else {
             res.status(400).send({
