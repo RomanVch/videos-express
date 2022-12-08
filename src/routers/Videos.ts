@@ -1,6 +1,12 @@
 import {Router} from "express";
 import {dataBase} from "../index";
 
+type ErrorMessagesT = {
+    errorsMessages:{
+        message: string,
+        field: string}[]
+}
+
 export const videosRouter = Router({});
 const startDate = 1546300800000
 
@@ -77,83 +83,44 @@ videosRouter.get('/:id', (req, res) => {
 videosRouter.put('/:id', (req, res) => {
     const id = +req.params.id;
     const video = dataBase.videos.find((item)=>item.id === id);
+    const errorHash:ErrorMessagesT = {errorsMessages: []};
+    const addError = (field:string)=>{
+        errorHash.errorsMessages.push({
+            message: "If the inputModel has incorrect values",
+            field
+        })
+    };
     if(video){
             if ( typeof req.body.title === "string" && req.body.title.length < 40){
                 video.title = req.body.title;
             } else {
-                res.status(400).send({
-                    errorsMessages: [
-                        {
-                            message: "If the inputModel has incorrect values",
-                            field: "title"
-                        }
-                    ]
-                })
-                return;
+                addError("title")
             } if ( typeof req.body.author === "string" && req.body.author.length < 20) {
                 video.author = req.body.author;
             } else {
-            res.status(400).send({
-                errorsMessages: [
-                    {
-                        message: "If the inputModel has incorrect values",
-                        field: "author"
-                    }
-                ]
-            })
-            return;
+            addError("author")
         }
             const checkString = req.body.availableResolutions.filter((item:string|any)=> typeof item === "string")
             if ( Array.isArray(req.body.availableResolutions) && req.body.availableResolutions.length > 0 && checkString.length === req.body.availableResolutions.length ){
                 video.availableResolutions = req.body.availableResolutions
             } else {
-            res.status(400).send({
-                errorsMessages: [
-                    {
-                        message: "If the inputModel has incorrect values",
-                        field: "availableResolutions"
-                    }
-                ]
-            })
-            return;
+                addError("availableResolutions")
         } if (typeof req.body.canBeDownloaded === "boolean") {
                 video.canBeDownloaded = req.body.canBeDownloaded;
             } else {
-            res.status(400).send({
-                errorsMessages: [
-                    {
-                        message: "If the inputModel has incorrect values",
-                        field: "canBeDownloaded"
-                    }
-                ]
-            })
-            return;
+            addError("canBeDownloaded")
         } if (typeof req.body.minAgeRestriction === "number" && req.body.minAgeRestriction < 19 && req.body.minAgeRestriction > 0){
                 video.minAgeRestriction = req.body.minAgeRestriction
             } else {
-            res.status(400).send({
-                errorsMessages: [
-                    {
-                        message: "If the inputModel has incorrect values",
-                        field: "minAgeRestriction"
-                    }
-                ]
-            })
-            return;
+            addError("minAgeRestriction")
         } if ( Date.parse(req.body.publicationDate) > startDate) {
                 video.publicationDate = new Date(req.body.publicationDate).toISOString()
             }  else {
-            res.status(400).send({
-                errorsMessages: [
-                    {
-                        message: "If the inputModel has incorrect values",
-                        field: "publicationDate"
-                    }
-                ]
-            })
-            return;
+            addError("publicationDate")
         }
-        console.log()
+        if(errorHash.errorsMessages.length){
+            res.status(400).send(errorHash)
+        }
             dataBase.videos = dataBase.videos.filter((item)=>item.id !== id)
             dataBase.videos.push(video);
             res.sendStatus(204)
