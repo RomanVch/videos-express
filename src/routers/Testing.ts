@@ -3,7 +3,7 @@ import {dataBase} from "../index";
 
 
 export const testingRouter = Router({});
-testingRouter.delete('/', (req, res) => {
+testingRouter.delete('/all-data', (req, res) => {
     dataBase.videos = []
-    res.send(204)
+   return  res.sendStatus(204)
 })
