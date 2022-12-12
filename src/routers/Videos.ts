@@ -24,14 +24,16 @@ videosRouter.get('/', (req, res) => {
 })
 
 videosRouter.post('/',(req, res)=>{
+    const dateNow = new Date()
+    const dateNextDay = new Date(Date.now() + ( 3600 * 1000 * 24))
     const video = {
         id:  dataBase.videos.length,
         title : '',
         author: '',
         canBeDownloaded: false,
         minAgeRestriction: null,
-        createdAt: new Date().toISOString(),
-        publicationDate: new Date().toISOString(),
+        createdAt: dateNow.toISOString(),
+        publicationDate: dateNextDay.toISOString(),
         availableResolutions: []
     }
 
