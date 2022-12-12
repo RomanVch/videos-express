@@ -49,7 +49,7 @@ videosRouter.post('/',(req, res)=>{
     } else {
         addError("author",errorHash)
     }
-    const checkString = req.body.availableResolutions.filter((item:string|any)=> typeof item === "string")
+    const checkString = req.body.availableResolutions.filter((item:string|any)=> item.startsWith("P") )
     if(Array.isArray(req.body.availableResolutions) && req.body.availableResolutions.length > 0 && checkString.length === req.body.availableResolutions.length){
         video.availableResolutions = req.body.availableResolutions
     } else {
