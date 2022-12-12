@@ -10,6 +10,13 @@ type ErrorMessagesT = {
 export const videosRouter = Router({});
 const startDate = 1546300800000
 
+const addError = (field:string,errorHash:ErrorMessagesT)=>{
+    errorHash.errorsMessages.push({
+        message: "If the inputModel has incorrect values",
+        field
+    })
+};
+
 videosRouter.get('/', (req, res) => {
     if( dataBase.videos.length ){
         res.status(200).send(dataBase.videos)
@@ -27,45 +34,27 @@ videosRouter.post('/',(req, res)=>{
         publicationDate: new Date().toISOString(),
         availableResolutions: []
     }
+
+    const errorHash:ErrorMessagesT = {errorsMessages: []};
+
     if ( typeof req.body.title === "string" && req.body.title.length < 40) {
         video.title = req.body.title
     } else {
-        res.status(400).send({
-            errorsMessages: [
-                {
-                    message: "If the inputModel has incorrect values",
-                    field: "title"
-                }
-            ]
-        })
-        return;
+        addError("title",errorHash)
     }
     if(typeof req.body.author === "string" && req.body.author.length < 20){
         video.author = req.body.author
     } else {
-        res.status(400).send({
-            errorsMessages: [
-                {
-                    message: "If the inputModel has incorrect values",
-                    field: "author"
-                }
-            ]
-        })
-        return;
+        addError("author",errorHash)
     }
     const checkString = req.body.availableResolutions.filter((item:string|any)=> typeof item === "string")
     if(Array.isArray(req.body.availableResolutions) && req.body.availableResolutions.length > 0 && checkString.length === req.body.availableResolutions.length){
         video.availableResolutions = req.body.availableResolutions
     } else {
-        res.status(400).send({
-            errorsMessages: [
-                {
-                    message: "If the inputModel has incorrect values",
-                    field: "availableResolutions"
-                }
-            ]
-        })
-    return;
+        addError("availableResolutions",errorHash)
+    }
+    if(errorHash.errorsMessages.length){
+        res.status(400).send(errorHash)
     }
     dataBase.videos.push(video)
     res.status(201).send(video)
@@ -84,39 +73,34 @@ videosRouter.put('/:id', (req, res) => {
     const id = +req.params.id;
     const video = dataBase.videos.find((item)=>item.id === id);
     const errorHash:ErrorMessagesT = {errorsMessages: []};
-    const addError = (field:string)=>{
-        errorHash.errorsMessages.push({
-            message: "If the inputModel has incorrect values",
-            field
-        })
-    };
+
     if(video){
             if ( typeof req.body.title === "string" && req.body.title.length < 40){
                 video.title = req.body.title;
             } else {
-                addError("title")
+                addError("title",errorHash)
             } if ( typeof req.body.author === "string" && req.body.author.length < 20) {
                 video.author = req.body.author;
             } else {
-            addError("author")
+            addError("author",errorHash)
         }
             const checkString = req.body.availableResolutions.filter((item:string|any)=> typeof item === "string")
             if ( Array.isArray(req.body.availableResolutions) && req.body.availableResolutions.length > 0 && checkString.length === req.body.availableResolutions.length ){
                 video.availableResolutions = req.body.availableResolutions
             } else {
-                addError("availableResolutions")
+                addError("availableResolutions",errorHash)
         } if (typeof req.body.canBeDownloaded === "boolean") {
                 video.canBeDownloaded = req.body.canBeDownloaded;
             } else {
-            addError("canBeDownloaded")
+            addError("canBeDownloaded",errorHash)
         } if (typeof req.body.minAgeRestriction === "number" && req.body.minAgeRestriction < 19 && req.body.minAgeRestriction > 0){
                 video.minAgeRestriction = req.body.minAgeRestriction
             } else {
-            addError("minAgeRestriction")
+            addError("minAgeRestriction",errorHash)
         } if ( Date.parse(req.body.publicationDate) > startDate) {
                 video.publicationDate = new Date(req.body.publicationDate).toISOString()
             }  else {
-            addError("publicationDate")
+            addError("publicationDate",errorHash)
         }
         if(errorHash.errorsMessages.length){
             res.status(400).send(errorHash)
